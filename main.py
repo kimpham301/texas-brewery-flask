@@ -8,27 +8,29 @@ from threading import Thread
 app = Flask(__name__)
 
 response = list()
+
+
 def fetchData():
-    page_num = 1
-    for page_num in range(10):
+    for page_num in range(1,10):
         r = requests.get('https://api.openbrewerydb.org/breweries?by_state=texas&per_page=50&page={}'.format(page_num))
-        page_num = page_num +1;
-        data=json.loads(r.text)
-        response.append(data)
+        data_json = json.loads(r.text)
+        if r is not None:
+            response.append(data_json)
 
 def onceADay():
     while True:
         fetchData()
         sleep(86400)
 
+
 Thread(target=onceADay).start()
 
-
-con=pymysql.connect(
+con = pymysql.connect(
     host='localhost',
     user='root',
-    password='password',
-    db='jsonparsong'
+    password='Poochie@123',
+    db='jsonparsong',
+    connect_timeout=2000
 )
 cursor = con.cursor(pymysql.cursors.DictCursor)
 
@@ -43,11 +45,11 @@ def validate_string(val):
 
 for data in response:
     for i in data:
-        query='Insert ignore into new_table ('
-        t1=[]
+        query = 'Insert ignore into new_table ('
+        t1 = []
         first_item = True
         for x in i:
-            xx=validate_string(i.get(x,None))
+            xx = validate_string(i.get(x, None))
             t1.append(xx)
             if not first_item:
                 # add a comma and space to the query if it's not the first item
@@ -76,4 +78,3 @@ def get_data():  # put application's code here
 
 if __name__ == '__main__':
     app.run()
-
