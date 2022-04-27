@@ -1,26 +1,36 @@
 import requests
 import pymysql
 import json
-from pymysql.cursors import DictCursor
 from flask import Flask, jsonify
+from time import sleep
+from threading import Thread
+
 app = Flask(__name__)
 
 response = list()
-page_num =1
-for page_num in range(10):
-    r = requests.get('https://api.openbrewerydb.org/breweries?by_state=texas&per_page=50&page={}'.format(page_num))
-    page_num = page_num +1;
-    data=json.loads(r.text)
-    response.append(data)
+def fetchData():
+    page_num = 1
+    for page_num in range(10):
+        r = requests.get('https://api.openbrewerydb.org/breweries?by_state=texas&per_page=50&page={}'.format(page_num))
+        page_num = page_num +1;
+        data=json.loads(r.text)
+        response.append(data)
+
+def onceADay():
+    while True:
+        fetchData()
+        sleep(86400)
+
+Thread(target=onceADay).start()
+
 
 con=pymysql.connect(
     host='localhost',
     user='root',
     password='password',
-    db='jsonparsing',
-    cursorclass=DictCursor
+    db='jsonparsong'
 )
-cursor = con.cursor()
+cursor = con.cursor(pymysql.cursors.DictCursor)
 
 
 def validate_string(val):
@@ -60,10 +70,8 @@ def get_data():  # put application's code here
     con.ping(reconnect=True)
     cursor.execute('SELECT * FROM new_table')
     brewery_data = jsonify(cursor.fetchall())
-    brewery_data.headers.add('Access-Control-Allow-Origin', '*')
+    brewery_data.headers.add('Access-Control-Allow-Origin', 'http://localhost:3000')
     return brewery_data
-
-
 
 
 if __name__ == '__main__':
