@@ -1,11 +1,9 @@
 import requests
 import pymysql
 import json
-import threading
 from pymysql.cursors import DictCursor
 from flask import Flask, jsonify
 app = Flask(__name__)
-
 
 response = list()
 page_num =1
