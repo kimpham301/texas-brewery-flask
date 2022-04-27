@@ -16,8 +16,8 @@ for page_num in range(10):
 con=pymysql.connect(
     host='localhost',
     user='root',
-    password='Poochie@123',
-    db='jsonparsong',
+    password='password',
+    db='jsonparsing',
     cursorclass=DictCursor
 )
 cursor = con.cursor()
