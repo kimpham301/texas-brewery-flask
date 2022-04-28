@@ -2,8 +2,7 @@ import requests
 import pymysql
 import json
 from flask import Flask, jsonify
-from time import sleep
-from threading import Thread
+from threading import Timer
 
 app = Flask(__name__)
 
@@ -14,26 +13,27 @@ def fetchData():
     for page_num in range(1,10):
         r = requests.get('https://api.openbrewerydb.org/breweries?by_state=texas&per_page=50&page={}'.format(page_num))
         data_json = json.loads(r.text)
-        if r is not None:
-            response.append(data_json)
+        response.append(data_json)
+    t = Timer(60*60*24, fetchData)
+    t.start()
 
-def onceADay():
-    while True:
-        fetchData()
-        sleep(86400)
+fetchData()
 
-
-Thread(target=onceADay).start()
 
 con = pymysql.connect(
     host='localhost',
     user='root',
     password='Poochie@123',
     db='jsonparsong',
-    connect_timeout=2000
+    connect_timeout=1000
 )
 cursor = con.cursor(pymysql.cursors.DictCursor)
-
+create_table = '''CREATE TABLE IF NOT EXISTS brewery_data (
+       id VARCHAR(50) NOT NULL PRIMARY KEY, name VARCHAR(50) NOT NULL, brewery_type VARCHAR(20), street VARCHAR(20), address_2 VARCHAR(20), address_3 VARCHAR(20),
+       city VARCHAR(20), state VARCHAR(20), county_province VARCHAR(20), postal_code VARCHAR(30),
+       country VARCHAR(20), longitude VARCHAR(20), latitude VARCHAR(20), phone VARCHAR(20), website_url VARCHAR(100),
+       updated_at VARCHAR(50), created_at VARCHAR(50), None VARCHAR(20) )'''
+cursor.execute(create_table)
 
 def validate_string(val):
     if val is not None:
@@ -45,7 +45,7 @@ def validate_string(val):
 
 for data in response:
     for i in data:
-        query = 'Insert ignore into new_table ('
+        query = 'INSERT IGNORE INTO brewery_data ('
         t1 = []
         first_item = True
         for x in i:
