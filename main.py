@@ -23,8 +23,8 @@ fetchData()
 con = pymysql.connect(
     host='localhost',
     user='root',
-    password='Poochie@123',
-    db='jsonparsong',
+    password='password',
+    db='jsonparsing',
     connect_timeout=1000
 )
 cursor = con.cursor(pymysql.cursors.DictCursor)
